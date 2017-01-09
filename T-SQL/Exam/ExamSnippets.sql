@@ -18,9 +18,15 @@ print IIF(ISNUMERIC(ISNULL('X21', 0)) = 1, 'this', 'that');
 
 -- Exam q.17
 select * from SalesLT.Customer;
+select * from SalesLT.Address;
 
-SELECT c.City, c.CountryRegion, SUM(o.TotalDue) AS Revenue
+--SELECT a.City, a.CountryRegion, SUM(o.TotalDue) AS Revenue
+SELECT a.CountryRegion, a.City, SUM(o.TotalDue) AS Revenue
 FROM SalesLT.Customer AS c
+JOIN SalesLT.CustomerAddress as ca
+ON ca.CustomerID = c.CustomerID
+JOIN SalesLT.Address as a
+ON a.AddressID = ca.AddressID
 JOIN SalesLT.SalesOrderHeader AS o 
 ON o.CustomerID = c.CustomerID
 GROUP BY GROUPING SETS (CountryRegion, (CountryRegion, City), ());

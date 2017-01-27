@@ -1,0 +1,143 @@
+{
+    "name": "CopyPipeline-l20",
+    "properties": {
+        "activities": [
+            {
+                "type": "Copy",
+                "typeProperties": {
+                    "source": {
+                        "type": "BlobSource",
+                        "recursive": false
+                    },
+                    "sink": {
+                        "type": "AzureDataLakeStoreSink",
+                        "copyBehavior": "MergeFiles",
+                        "writeBatchSize": 0,
+                        "writeBatchTimeout": "00:00:00"
+                    }
+                },
+                "inputs": [
+                    {
+                        "name": "InputDataset-l20"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "name": "OutputDataset-l20"
+                    }
+                ],
+                "policy": {
+                    "timeout": "1.00:00:00",
+                    "concurrency": 1,
+                    "executionPriorityOrder": "NewestFirst",
+                    "style": "StartOfInterval",
+                    "retry": 3,
+                    "longRetry": 0,
+                    "longRetryInterval": "00:00:00"
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                },
+                "name": "Activity-0-log_txt->copytoolWasbTest_txt"
+            }
+        ],
+        "start": "2017-01-22T16:18:02.558Z",
+        "end": "2017-01-22T16:18:02.558Z",
+        "isPaused": false,
+        "hubName": "ffcgsandboxadf_hub",
+        "pipelineMode": "OneTime",
+        "expirationTime": "3.00:00:00",
+        "datasets": [
+            {
+                "name": "InputDataset-l20",
+                "properties": {
+                    "structure": [
+                        {
+                            "name": "Prop_0",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_1",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_2",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_3",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_4",
+                            "type": "String"
+                        }
+                    ],
+                    "published": false,
+                    "type": "AzureBlob",
+                    "linkedServiceName": "Source-BlobStorage-l20",
+                    "typeProperties": {
+                        "fileName": "log.txt",
+                        "folderPath": "adf-data/iislogs/2016/01",
+                        "format": {
+                            "type": "TextFormat",
+                            "columnDelimiter": ";",
+                            "skipLineCount": 4
+                        }
+                    },
+                    "availability": {
+                        "frequency": "Day",
+                        "interval": 1
+                    },
+                    "external": true,
+                    "policy": {}
+                }
+            },
+            {
+                "name": "OutputDataset-l20",
+                "properties": {
+                    "structure": [
+                        {
+                            "name": "Prop_0",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_1",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_2",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_3",
+                            "type": "String"
+                        },
+                        {
+                            "name": "Prop_4",
+                            "type": "String"
+                        }
+                    ],
+                    "published": false,
+                    "type": "AzureDataLakeStore",
+                    "linkedServiceName": "Destination-DataLakeStore-l20",
+                    "typeProperties": {
+                        "fileName": "copytoolWasbTest.txt",
+                        "folderPath": "Samples/Output",
+                        "format": {
+                            "type": "TextFormat",
+                            "columnDelimiter": ","
+                        }
+                    },
+                    "availability": {
+                        "frequency": "Day",
+                        "interval": 1
+                    },
+                    "external": false,
+                    "policy": {}
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,116 @@
+{
+    "name": "Wizard Copy",
+    "properties": {
+        "description": "Copy transactions.txt",
+        "activities": [
+            {
+                "type": "Copy",
+                "typeProperties": {
+                    "source": {
+                        "type": "BlobSource",
+                        "recursive": false
+                    },
+                    "sink": {
+                        "type": "SqlSink",
+                        "writeBatchSize": 0,
+                        "writeBatchTimeout": "00:00:00"
+                    },
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "columnMappings": "tdate:tdate,amount:amount"
+                    }
+                },
+                "inputs": [
+                    {
+                        "name": "InputDataset-w44"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "name": "OutputDataset-w44"
+                    }
+                ],
+                "policy": {
+                    "timeout": "1.00:00:00",
+                    "concurrency": 1,
+                    "executionPriorityOrder": "NewestFirst",
+                    "style": "StartOfInterval",
+                    "retry": 3,
+                    "longRetry": 0,
+                    "longRetryInterval": "00:00:00"
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                },
+                "name": "Activity-0-transactions_txt->[dbo]_[transactions]"
+            }
+        ],
+        "start": "2017-01-21T10:02:06.538Z",
+        "end": "2017-01-21T10:02:06.538Z",
+        "isPaused": false,
+        "hubName": "ffcgsandboxadf_hub",
+        "pipelineMode": "OneTime",
+        "expirationTime": "3.00:00:00",
+        "datasets": [
+            {
+                "name": "InputDataset-w44",
+                "properties": {
+                    "structure": [
+                        {
+                            "name": "tdate",
+                            "type": "Datetime"
+                        },
+                        {
+                            "name": "amount",
+                            "type": "String"
+                        }
+                    ],
+                    "published": false,
+                    "type": "AzureBlob",
+                    "linkedServiceName": "blob-store",
+                    "typeProperties": {
+                        "fileName": "transactions.txt",
+                        "folderPath": "adf-data/data",
+                        "format": {
+                            "type": "TextFormat",
+                            "columnDelimiter": ",",
+                            "firstRowAsHeader": true
+                        }
+                    },
+                    "availability": {
+                        "frequency": "Day",
+                        "interval": 1
+                    },
+                    "external": true,
+                    "policy": {}
+                }
+            },
+            {
+                "name": "OutputDataset-w44",
+                "properties": {
+                    "structure": [
+                        {
+                            "name": "tdate"
+                        },
+                        {
+                            "name": "amount"
+                        }
+                    ],
+                    "published": false,
+                    "type": "AzureSqlTable",
+                    "linkedServiceName": "sql-database",
+                    "typeProperties": {
+                        "tableName": "[dbo].[transactions]"
+                    },
+                    "availability": {
+                        "frequency": "Day",
+                        "interval": 1
+                    },
+                    "external": false,
+                    "policy": {}
+                }
+            }
+        ]
+    }
+}

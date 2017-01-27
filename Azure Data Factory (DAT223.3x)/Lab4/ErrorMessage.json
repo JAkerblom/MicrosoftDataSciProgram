@@ -1,0 +1,34 @@
+Error in Activity: 
+[
+	{
+		"errorId":"E_STORE_USER_FAILURE",
+		"severity":"Error",
+		"component":"STORE",
+		"source":"USER",
+		"message":"Secret not found for the specified user account. Cosmos Path: wasb://adf-data@ffcgsandboxstorage.blob.core.windows.net/iislogs/2016/01/",
+		"details":	"at token '@log_file', line 19\r\n
+					near the ###:\r\n
+					**************\r\n
+					ng,\n 
+					status string,\n 
+					server_bytes int,\n 
+					client_bytes int,\n 
+					time_taken int?,\n 
+					user_agent string,\n 
+					referrer string\n
+					FROM ### @log_file\n
+					USING Extractors.Text(' ', silent:true);\n\n
+					@summary =\n
+					SELECT date,\n 
+					COUNT(*) AS hits,\n 
+					SUM(server_bytes) AS bytes_in,\n 
+					SUM(client_byt",
+		"description":"A user operation has resulted in a store failure.",
+		"resolution":"Please correct the user operation.",
+		"helpLink":"",
+		"filePath":"",
+		"lineNumber":19,
+		"startOffset":558,
+		"endOffset":567
+	}
+].

@@ -1,0 +1,102 @@
+{
+    "name": "Sales to Orders and LineItems",
+    "properties": {
+        "description": "Transform sales data to order data and line item data.",
+        "activities": [
+            {
+                "name": "Extract and stage order data and line item data",
+                "type": "DataLakeAnalyticsU-SQL",
+                "linkedServiceName": "AzureDataLakeAnalyticsLinkedService",
+                "typeProperties": {
+                    "scriptPath": "adf-data/sales/sales.usql",
+                    "scriptLinkedService": "blob-store",
+                    "degreeOfParallelism": 2,
+                    "parameters": {
+                        "sales_file": "$$Text.Format('wasb://adf-data@ffcgsandboxstorage.blob.core.windows.net/sales/{0:yyyy}/{1:MM}/{2:dd}.txt', SliceStart, SliceStart, SliceStart)",
+                        "lineitems_file": "$$Text.Format('EdX-course/sales/stage/lineitems/{0:yyyy}/{1:MM}/{2:dd}.txt', SliceStart, SliceStart, SliceStart)",
+                        "orders_file": "$$Text.Format('EdX-course/sales/stage/orders/{0:yyyy}/{1:MM}/{2:dd}.txt', SliceStart, SliceStart, SliceStart)"
+                    }
+                },
+                "inputs": [ { "name": "blob-input-sales" } ],
+                "outputs": [
+                    { "name": "stage-orders" },
+                    { "name": "stage-lineitems" }
+                ],
+                "policy": {
+                    "timeout": "01:00:00",
+                    "concurrency": 5,
+                    "retry": 2
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                }
+            },
+            {
+                "name": "Push staged order data to SQL database",
+                "type": "Copy",
+                "typeProperties": {
+                    "source": {
+                        "type": "AzureDataLakeStoreSource",
+                        "recursive": false
+                    },
+                    "sink": {
+                        "type": "SqlSink",
+                        "writeBatchSize": 0,
+                        "writeBatchTimeout": "00:00:00"
+                    },
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "columnMappings": "OrderDate:OrderDate,OrderID:OrderID,CustomerID:CustomerID,CustomerName:CustomerName,Total:Total"
+                    }
+                },
+                "inputs": [ { "name": "stage-orders" } ],
+                "outputs": [ { "name": "dbo-output-orders" } ],
+                "policy": {
+                    "timeout": "01:00:00",
+                    "concurrency": 5,
+                    "retry": 2
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                }
+            },
+            {
+                "name": "Push staged line item data to SQL database",
+                "type": "Copy",
+                "typeProperties": {
+                    "source": {
+                        "type": "AzureDataLakeStoreSource",
+                        "recursive": false
+                    },
+                    "sink": {
+                        "type": "SqlSink",
+                        "writeBatchSize": 0,
+                        "writeBatchTimeout": "00:00:00"
+                    },
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "columnMappings": "OrderID:OrderID,OrderLineID:OrderLineID,StockItemID:StockItemID,StockItemName:StockItemName,Quantity:Quantity,UnitPrice:UnitPrice,LineTotal:LineTotal"
+                    }
+                },
+                "inputs": [ { "name": "stage-lineitems" } ],
+                "outputs": [ { "name": "dbo-output-lineitems" } ],
+                "policy": {
+                    "timeout": "01:00:00",
+                    "concurrency": 5,
+                    "retry": 2
+                },
+                "scheduler": {
+                    "frequency": "Day",
+                    "interval": 1
+                }
+            }
+        ],
+        "start": "2016-01-01T00:00:00Z",
+        "end": "2016-04-01T00:00:00Z",
+        "isPaused": true,
+        "hubName": "ffcgsandboxadf_hub",
+        "pipelineMode": "Scheduled"
+    }
+}

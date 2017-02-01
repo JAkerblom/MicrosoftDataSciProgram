@@ -1,0 +1,7 @@
+C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\DataUtilities\bin\Debug\DataUtilities.dll
+C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\DataUtilities\bin\Debug\DataUtilities.pdb
+C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\DataUtilities\bin\Debug\Microsoft.Analytics.Interfaces.dll
+C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\DataUtilities\bin\Debug\Microsoft.Analytics.Types.dll
+C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\DataUtilities\obj\Debug\DataUtilities.csprojResolveAssemblyReference.cache
+C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\DataUtilities\obj\Debug\DataUtilities.dll
+C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\DataUtilities\obj\Debug\DataUtilities.pdb

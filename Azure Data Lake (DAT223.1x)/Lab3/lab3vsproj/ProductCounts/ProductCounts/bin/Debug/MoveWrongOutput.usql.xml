@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?><CompileResult scriptPath="C:\Users\JAkerblom\Documents\Visual Studio 2015\Projects\E. FFCG_sandbox\EdX\DAT223.1x\lab3\ProductCounts\ProductCounts\MoveWrongOutput.usql"><Error><Start>97</Start><End>131</End><Message>E_STORE_USER_FILENOTFOUND: File not found: /EdX-course/Output/ipdetails.csv.
+Description:
+Unable to obtain information about this file.
+Resolution:
+Ensure the file exists and that the casing is correct (paths are case-sensitive).... at token '"/EdX-course/Output/ipdetails.csv"', line 5
+near the ###:
+**************
+@wronglyplacedfile =
+    EXTRACT 
+        client_ip string,
+        ipfamily string
+    FROM  ### "/EdX-course/Output/ipdetails.csv"
+    USING Extractors.Csv();
+
+OUTPUT @wronglyplacedfile
+TO "EdX-course/Outputs/ipdetails.csv"
+USING Outputters.Csv();
+</Message></Error></CompileResult>

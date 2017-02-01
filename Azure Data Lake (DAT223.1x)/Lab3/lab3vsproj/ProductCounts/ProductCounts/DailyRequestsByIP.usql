@@ -1,0 +1,29 @@
+﻿@months = 
+  SELECT DISTINCT DateTime.Parse(date).Month AS month,
+         DateTime.Parse(date).ToString("MMMM") AS month_name
+  FROM iis.log;
+
+@ip_requests =
+  SELECT DateTime.Parse(date) AS date,
+         client_ip
+  FROM iis.log;
+
+@monthly_counts =
+  SELECT date.Month AS month,
+         client_ip,
+         COUNT(*) AS requests
+  FROM @ip_requests
+  GROUP BY date.Month,
+           client_ip;
+
+@named_monthly_counts =
+    SELECT m.month, m.month_name, c.client_ip, c.requests
+    FROM @monthly_counts AS c
+         INNER JOIN
+             @months AS m
+         ON c.month == m.month;
+
+OUTPUT @named_monthly_counts
+  TO "/EdX-course/Outputs/monthly_counts_by_ip.csv"
+  ORDER BY month, client_ip
+  USING Outputters.Csv();

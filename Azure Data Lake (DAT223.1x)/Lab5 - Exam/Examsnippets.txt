@@ -1,0 +1,188 @@
+CREATE DATABASE IF NOT EXISTS retail;
+
+USE DATABASE retail;
+
+CREATE SCHEMA IF NOT EXISTS sales;
+
+CREATE TABLE sales.stock (
+    id int, 
+    item string,
+    INDEX idxId CLUSTERED (id)
+    PARTITIONED BY HASH (id));
+
+USE DATABASE retail;
+	
+@stockdata = 
+	EXTRACT id int,
+		item string
+	FROM "/EdX-course/retail/stock.txt"
+	USING Extractors.Tsv();
+
+INSERT INTO sales.stock
+SELECT * FROM @stockdata;
+
+USE DATABASE retail;
+
+@res = 
+	SELECT * 
+	FROM sales.stock AS s
+	WHERE s.item.ToLower().IndexOf("chocolate") != -1;
+
+OUTPUT @res
+	TO "/EdX-course/retail/output/chocolate-sales.csv"
+	USING Outputters.Csv();
+
+------
+
+USE DATABASE retail;
+
+CREATE TABLE sales.orders (
+    orderid int, 
+    orderdate string,
+	customername string,
+	phonenumber string,
+	deliveryaddressline1 string,
+	deliveryaddressline2 string,
+	cityname string,
+	stockitemid string, <- error!! should be int
+	quantity int?,
+	unitprice decimal?
+    INDEX idxOrderId CLUSTERED (orderid)
+    PARTITIONED BY HASH (orderid));
+	
+USE DATABASE retail;
+	
+@orderdata = 
+	EXTRACT orderid int, 
+    orderdate string,
+	customername string,
+	phonenumber string,
+	deliveryaddressline1 string,
+	deliveryaddressline2 string,
+	cityname string,
+	stockitemid string,
+	quantity int?,
+	unitprice decimal?
+	FROM "/EdX-course/retail/orders/{*}.txt"
+	USING Extractors.Tsv(skipFirstNRows:1, silent:true);
+
+INSERT INTO sales.orders
+SELECT * FROM @orderdata;
+
+USE DATABSE retail;
+
+@yearsoforders = 
+	SELECT orderdate.Substring(0, 4) AS year
+	FROM sales.orders;
+
+@res = 
+	SELECT DISTINCT year,
+		COUNT(*) AS NumberOfOrders
+	FROM @yearsoforders
+	GROUP BY year;
+
+OUTPUT @res
+TO "/EdX-course/retail/output/yearly-sales.csv"
+ORDER BY year
+USING Outputters.Csv();
+
+--- gav fel svar, här kommer troligen rätta --
+0		1
+2013	12119	
+2014	12083
+2015	12235
+2016	9617
+
+USE DATABASE retail;
+
+@tmp = SELECT DISTINCT orderid, orderdate.Substring(0,4) AS year  
+    FROM [retail].[sales].[orders];
+
+@table = SELECT year, COUNT(orderid) AS nrOrderYear  
+    FROM @tmp
+    GROUP BY year;
+
+OUTPUT @table
+    TO "/EdX-course/retail/output/retail-sales-correct.tsv"
+    ORDER BY year
+    USING Outputters.Tsv();
+	
+----
+
+USE DATABASE retail;
+
+@chocs = 
+	SELECT *
+	FROM sales.stock AS s
+	WHERE s.item.ToLower().IndexOf("chocolate") != -1;
+
+@res = 
+	SELECT s.item AS itemname, SUM(o.quantity) AS quantitySold
+	FROM @chocs AS s
+	JOIN sales.orders AS o
+	ON s.id = o.stockitemid
+	GROUP BY s.item;
+	
+OUTPUT @res
+	TO "/EdX-course/retail/output/chocolate-sales-total.csv"
+	ORDER BY quantitySold DESC
+	USING Outputters.Csv();
+
+----
+
+USE DATABASE retail;
+
+@chocs = 
+	SELECT *
+	FROM sales.stock AS s
+	WHERE s.item.ToLower().IndexOf("chocolate") != -1;
+
+@res = 
+	SELECT o.customername, SUM(o.quantity) AS quantitySold
+	FROM @chocs AS s
+	JOIN sales.orders AS o
+	ON s.id = o.stockitemid
+	GROUP BY o.customername;
+
+OUTPUT @res
+	TO "/EdX-course/retail/output/chocolate-sales-customer.csv"
+	ORDER BY quantitySold DESC
+	USING Outputters.Csv();
+	
+--- drop and replace faulty orders table ---
+
+USE DATABASE retail;
+
+DROP TABLE IF EXISTS sales.orders;
+
+CREATE TABLE sales.orders (
+    orderid int, 
+    orderdate string,
+	customername string,
+	phonenumber string,
+	deliveryaddressline1 string,
+	deliveryaddressline2 string,
+	cityname string,
+	stockitemid int,
+	quantity int?,
+	unitprice decimal?
+    INDEX idxOrderId CLUSTERED (orderid)
+    PARTITIONED BY HASH (orderid));
+	
+@orderdata = 
+	EXTRACT orderid int, 
+    orderdate string,
+	customername string,
+	phonenumber string,
+	deliveryaddressline1 string,
+	deliveryaddressline2 string,
+	cityname string,
+	stockitemid string,
+	quantity int?,
+	unitprice decimal?
+	FROM "/EdX-course/retail/orders/{*}.txt"
+	USING Extractors.Tsv(skipFirstNRows:1, silent:true);
+
+INSERT INTO sales.orders
+SELECT * FROM @orderdata;
+	

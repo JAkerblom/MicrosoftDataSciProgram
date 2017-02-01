@@ -1,0 +1,10 @@
+@wronglyplacedfile =
+    EXTRACT 
+        client_ip string,
+        ipfamily string
+    FROM "/EdX-course/Output/ipdetails.csv"
+    USING Extractors.Csv();
+
+OUTPUT @wronglyplacedfile
+TO "EdX-course/Outputs/ipdetails.csv"
+USING Outputters.Csv();

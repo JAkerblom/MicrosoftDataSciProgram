@@ -1,0 +1,14 @@
+﻿@products =
+    SELECT ProductCounts.Requests.GetParameter(query, "productid") AS product
+    FROM iis.log
+    WHERE query.Contains("productid");
+
+@productRequests =
+    SELECT product,
+           COUNT( * ) AS requests
+    FROM @products
+    GROUP BY product;
+
+OUTPUT @productRequests
+    TO "/EdX-course/Outputs/productRequests.csv"
+    USING Outputters.Csv();

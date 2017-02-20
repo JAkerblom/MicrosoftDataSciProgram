@@ -1,0 +1,23 @@
+join.auto <- function(df1, df2, xCol, yCol){
+  require(dplyr) ## Make sure dplyr is loaded
+  left_join(df1, df2, by.x = xCol, by.y = yCol)
+}
+
+# Map 1-based optional input ports to variables
+dataset1 <- maml.mapInputPort(1) # class: data.frame
+dataset2 <- maml.mapInputPort(2) # class: data.frame
+
+origin <- dataset2
+dest <- dataset2
+
+names(origin) <- c("o_airport_id", "o_city", "o_state", "o_name")
+names(dest) <- c("d_airport_id", "d_city", "d_state", "d_name")
+
+joinedorigin <- join.auto(dataset1, origin, "OriginAirportID", "o_airport_id")
+joineddest <- join.auto(dataset1, dest, "DestAirportID", "d_airport_id")
+
+# Sample operation
+data.set = rbind(joinedorigin, joineddest);
+
+# Select data.frame to be sent to the output Dataset port
+maml.mapOutputPort("data.set");

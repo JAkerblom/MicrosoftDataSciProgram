@@ -1,0 +1,26 @@
+select 
+     [Year],
+     [Month],
+     [DayofMonth],
+     [DayOfWeek],
+     [Carrier],
+     [OriginAirportID],	
+     [DestAirportID],
+     [CRSDepTime],	
+     [DepDelay],	
+     [DepDel15],
+     [CRSArrTime],	
+     [ArrDelay],
+     [ArrDel15],
+     origin.[city] as OriginCity,
+     origin.[state] as OriginState,
+     origin.[name] as OriginName,
+     dest.[city] as DestCity,
+     dest.[state] as DestState,
+     dest.[name] as DestName,
+     [Cancelled]
+from t1
+left join t2 as origin
+on t1.[OriginAirportID] = origin.[airport_id]
+left join t2 as dest
+on t2.[DestAirportID] = dest.[airport_id];

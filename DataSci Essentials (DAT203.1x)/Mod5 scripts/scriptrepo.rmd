@@ -1,0 +1,215 @@
+---
+title: "Script Repo"
+output: html_document
+---
+
+This is a sample collection from the course Data Science Essentials
+
+### Get dataset from csv
+```{r}
+filePath <- file.path('./Data', 'Automobile price data _Raw_.csv')
+auto.price <- read.csv(filePath, header = TRUE, stringsAsFactors = FALSE)
+str(auto.price)
+```
+
+### Convert to NAs and remove them
+```{r}
+## Grab columns to change values of
+cols = c('price', 'bore', 'stroke', 'horsepower', 'peak.rpm')
+## Convert the character '?' to an NA
+auto.price[, cols] = lapply(auto.price[, cols], function(x) ifelse(x == '?', NA, x)) 
+## Remove rows with NAs
+auto.price = auto.price[complete.cases(auto.price), ] 
+```
+### Convert character columns to numeric
+```{r}
+## Convert character columns to numeric
+auto.price[, cols] = lapply(auto.price[, cols], as.numeric) 
+```
+### Transform column
+```{r}
+auto.price$lnprice = log2(auto.price$price)
+```
+
+### Describe function for making summary of column but with standard deviation included
+```{r}
+## Use the function describe to get extended summary of column
+describe = function(df, col){
+  tmp = df[, col]
+  sumry = summary(tmp)
+  nms = names(sumry)
+  nms = c(nms, 'std')
+  out = c(sumry, sd(tmp))
+  names(out) = nms
+  out
+}
+
+describe(auto.price, 'price')
+```
+
+### Plot function for plotting histogram and simple boxplot on certain column
+```{r}
+plotstats <- function(df, col, bins = 30){
+   require(ggplot2)
+   require(gridExtra)
+   dat = as.factor('') ## Not sure what this does
+   
+   ## Compute bin width
+   bin.width = (max(df[, col]) - min(df[, col]))/ bins
+
+   ## Plot a histogram
+   p1 = ggplot(df, aes_string(col)) +
+     geom_histogram(binwidth = bin.width)
+   
+   ## A simple boxplot
+   p2 = ggplot(df, aes_string(dat, col)) +
+     geom_boxplot() + coord_flip() + ylab('')
+   
+   ## Now stack the plots
+   grid.arrange(p2, p1, nrow = 2)
+}
+
+plotstats(auto.price, 'price')
+```
+
+### Simple scatter plot function
+```{r, echo=FALSE}
+## Fcn: Plot two cols against each other
+vis.simple <- function(col1, df = auto.price, col2 = 'lnprice'){
+  require(ggplot2) # make sure ggplot2 is loaded
+  title = paste('Plot of', col1, 'vs.', col2) # create the title text string
+  ggplot(df, aes_string(col1, col2)) +
+    geom_point() +
+    ggtitle(title)
+} 
+
+plot.cols <- c("curb.weight",
+               "engine.size",
+               "city.mpg")
+
+lapply(plot.cols, vis.simple)
+```
+
+### Function for creating outlier flags
+```{r}
+id.outlier <- function(df){
+  ## Use ifelse to filter for outliers
+  df[, "outlier"] <- ifelse(df[,"engine.size"] > 190 | 
+                              df[, "curb.weight"] > 3500| 
+                              df[, "city.mpg"] > 40, '1', '0')   
+  df
+}
+
+## ID the outliers
+auto.price <- id.outlier(auto.price)
+
+require(dplyr) # make sure dplyr is loaded
+## Return just the outliers with a filter
+justOutliers <- auto.price %>% filter(outlier == 1)
+## Return without the outlier col and filtered on those that aren't outliers
+excludedOutliers <- auto.price %>% filter(outlier == 0) %>% subset(select=-outlier)
+```
+
+### Scatter plot function for certain factors (outliers etc)
+```{r}
+vis.outlier <- function(col1 = 'city.mpg'){
+  require(ggplot2) # make sure ggplot2 is loaded
+  ## convert character columns to factors for plotting
+  auto.price[, "outlier"] <- as.factor(auto.price[, "outlier"])    
+  auto.price[, "fuel.type"] <- as.factor(auto.price[, "fuel.type"])    
+  title = paste('Plot of', col1, 'vs.lnprice') # character string title
+  ggplot(auto.price, aes_string(col1, 'lnprice')) +
+    geom_point(aes(color = outlier, 
+                   shape = fuel.type, 
+				   alpha = 0.5, size = 4)) +
+    ggtitle(title)
+}
+
+## set the columns to plot
+plot.cols <- c("curb.weight",
+               "engine.size",
+               "city.mpg")
+
+lapply(plot.cols, vis.outlier)  # plot the results
+
+```
+
+### Function for joining dataframes
+```{r}
+## Define a function to join the data frames
+join.auto <- function(autos, makes){
+  require(dplyr) ## Make sure dplyr is loaded
+  left_join(autos, makes, by = 'make.id')
+}
+
+## R code to join the two input tables
+autos <- read.csv(file.path('./Data', 'autos.csv'), header=TRUE, stringsAsFactors=FALSE)
+makes <- read.csv(file.path('./Data', 'makes.csv'), header=TRUE, stringsAsFactors=FALSE)
+str(autos)
+str(makes)
+
+out <- join.auto(autos, makes) ## Join the data frames
+head(out)
+```
+
+### Function to clean and prep the auto data using mutate etc
+```{r}
+prep.auto <- function(df, col.names){
+  require(dplyr) ## Make sure dplyr is loaded
+  
+  ## set the column names. 
+  names(df) <- col.names
+  
+  ## Eliminate unneeded columns
+  df <- df[,!(names(df) %in% 
+                c('symboling', 'normalizedlosses', 'makeid'))]
+ 
+  ## Coerce some character columns to numeric 
+  ## Uncomment if NOT in Azure ML
+  # cols <- c('price', 'bore', 'stroke', 'horsepower', 'rpm')
+  # df[, cols] <- lapply(df[, cols], as.numeric)
+
+  ## Add a log transformed column for price using dplyr mutate
+  df <- df %>% mutate(lnprice = log(price))
+  
+  ## Remove rows with NAs 
+  df <- df[complete.cases(df), ]
+  
+  ## Remove duplicate rows
+  df <- df %>% filter (! duplicated(df,))
+  
+  ## Consolidate the number of cylinders
+  df <- df %>%
+    mutate(cylinders = ifelse(cylinders %in% c("four", "three", "two"), "three-four",
+           ifelse(cylinders %in% c("five", "six"), "five-six", "eight-twelve")))
+  df
+}
+
+## Define column names
+col.names <- c('symboling', 'normalizedlosses', 'makeid', 'fueltype', 'aspiration', 'doors',
+               'body', 'drive', 'engineloc', 'wheelbase',
+               'length', 'width', 'height', 'weight', 'enginetype',
+               'cylinders', 'enginesize', 'fuelsystem', 'bore', 'stroke',
+               'compression', 'horsepower', 'rpm', 'citympg',
+               'highwaympg', 'price', 'make')
+
+## R code to prep the auto data
+out <- prep.auto(autos.price, col.names)
+str(out)
+```
+
+### Using scale function
+```{r}
+num.cols <- c("wheel.base",
+				"length",
+				"width",
+				"curb.weight")
+
+out <- scale(auto.price[, num.cols])
+head(out)
+```
+
+###
+```{r}
+
+```
